@@ -1,0 +1,124 @@
+name: UI CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - development
+      - feature/*
+      - bug/*
+    paths:
+      - 'ui/**'
+  pull_request:
+    branches:
+      - main
+      - development
+    paths:
+      - 'ui/**'
+
+defaults:
+  run:
+    working-directory: ./ui
+
+jobs:
+  # 1. Lint Python code with Pylint
+  lint_python:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      # Install requirements
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Run Pylint on the codebase
+      - name: Run Pylint
+        run: |
+          pylint --rcfile ../.pylintrc.toml ui/
+
+  # 2. Lint Dockerfile with Hadolint
+  lint_docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Run Hadolint on Dockerfile
+      - name: Run Hadolint
+        run: |
+          wget -O hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+          chmod +x hadolint
+          ./hadolint --config ../.hadolint.yml Dockerfile
+
+  # 3. Unit testing
+  unit_tests:
+    # Ensure lint_python completes successfully before running tests
+    needs: lint_python
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Run unit tests using Pytest
+      - name: Run Pytest
+        run: |
+          pytest tests/
+
+  # 4. Build Docker image
+  docker_build_push:
+    # Ensure jobs are completed successfully before running
+    needs: [unit_tests, lint_docker]
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Build the image
+      - name: Build Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}-ui:latest .
+
+      # Log in to GH Container Registry ONLY if push to main or PR to main
+      - name: Log in to GitHub Container Registry
+        if: |
+          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+          (github.event_name == 'pull_request' && github.base_ref == 'main')
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # Push the image ONLY if push to main or PR to main
+      - name: Push Docker image
+        if: |
+          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+          (github.event_name == 'pull_request' && github.base_ref == 'main')
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}-ui:latest

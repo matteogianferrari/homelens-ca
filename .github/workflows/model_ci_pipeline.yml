@@ -1,0 +1,43 @@
+name: Model CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    # Trigger the CI pipeline only when notebooks are updated
+    paths:
+      - "**.ipynb"
+
+defaults:
+  run:
+    working-directory: ./model
+
+jobs:
+  # 1. Execute script
+  update_model_registry:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      # Install requirements
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Step 4: Run the script
+      - name: Run champion model update script
+        env:
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+        run: |
+          python scripts/update_mlflow_model.py

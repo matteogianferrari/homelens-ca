@@ -1,0 +1,70 @@
+name: Model REST API CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - development
+      - feature/*
+      - bug/*
+    paths:
+      - 'model/**'
+  pull_request:
+    branches:
+      - main
+      - development
+    paths:
+      - 'model/**'
+
+defaults:
+  run:
+    working-directory: ./model
+
+jobs:
+  # 1. Lint Dockerfile with Hadolint
+  lint_docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Run Hadolint on Dockerfile
+      - name: Run Hadolint
+        run: |
+          wget -O hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+          chmod +x hadolint
+          ./hadolint --config ../.hadolint.yml Dockerfile
+
+  # 2. Build Docker image
+  docker_build_push:
+    # Ensure jobs are completed successfully before running
+    needs:  lint_docker
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Build the image
+      - name: Build Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}-model:latest .
+
+      # Log in to GH Container Registry ONLY if push to main or PR to main
+      - name: Log in to GitHub Container Registry
+        if: |
+          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+          (github.event_name == 'pull_request' && github.base_ref == 'main')
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # Push the image ONLY if push to main or PR to main
+      - name: Push Docker image
+        if: |
+          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+          (github.event_name == 'pull_request' && github.base_ref == 'main')
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}-model:latest

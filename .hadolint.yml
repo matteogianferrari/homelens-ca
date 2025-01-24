@@ -1,0 +1,2 @@
+ignored:
+  - DL3013  # Ignore Pin versions in pip
