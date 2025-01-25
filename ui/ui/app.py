@@ -53,7 +53,7 @@ def predict(*features) -> float:
 
     # Prepares the payload
     payload = {"features": features}
-    print(payload)
+
     # Makes the POST request to the Model microservice
     response = requests.post(os.getenv('MODEL_SERVING_URL'), json=payload, timeout=3)
 

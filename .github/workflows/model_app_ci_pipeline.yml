@@ -9,12 +9,14 @@ on:
       - bug/*
     paths:
       - 'model/**'
+      - '!model/notebooks/**.ipynb'
   pull_request:
     branches:
       - main
       - development
     paths:
       - 'model/**'
+      - '!model/notebooks/**.ipynb'
 
 defaults:
   run:
