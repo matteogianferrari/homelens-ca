@@ -73,13 +73,13 @@ inputs = [
         label="Ocean Proximity",
         info="Proximity of the block to the ocean."
     ),
-    gr.Number(
+    gr.Slider(
         minimum=-124.3,
         maximum=-114.31,
         label="Longitude",
         info="Geographical longitude of the block location."
     ),
-    gr.Number(
+    gr.Slider(
         minimum=32.54,
         maximum=41.95,
         label="Latitude",
