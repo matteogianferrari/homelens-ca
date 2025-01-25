@@ -9,14 +9,14 @@ on:
       - bug/*
     paths:
       - 'model/**'
-      - '!model/notebooks/**.ipynb'
+      - '!model/notebooks/**'
   pull_request:
     branches:
       - main
       - development
     paths:
       - 'model/**'
-      - '!model/notebooks/**.ipynb'
+      - '!model/notebooks/**'
 
 defaults:
   run:
@@ -55,18 +55,16 @@ jobs:
         run: |
           docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}-model:latest .
 
-      # Log in to GH Container Registry ONLY if push to main or PR to main
+      # Log in to GH Container Registry ONLY if push to main
       - name: Log in to GitHub Container Registry
         if: |
-          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-          (github.event_name == 'pull_request' && github.base_ref == 'main')
+          (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Push the image ONLY if push to main or PR to main
+      # Push the image ONLY if push to main
       - name: Push Docker image
         if: |
-          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-          (github.event_name == 'pull_request' && github.base_ref == 'main')
+          (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}-model:latest
