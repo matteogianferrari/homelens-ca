@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'registry_package' && github.event.package.package_type == 'container' && (github.event.package.name == format('{0}-ui', github.repository))  || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'registry_package' && github.event.package.package_type == 'container' && (github.event.package.name == format('{0}-model', github.repository))  || github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Trigger Deploy on Render
