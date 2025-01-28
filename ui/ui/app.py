@@ -34,7 +34,7 @@ def predict(*features) -> float:
                 - median_income (float): Median income in the block (in thousands of $).
 
     Returns:
-        The predicted median house value.
+        The predicted median house value ($).
 
     Raises:
         requests.HTTPError: If the HTTP request to the model service fails.
