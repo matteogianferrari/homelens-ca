@@ -3,6 +3,7 @@ name: UI CD Pipeline
 on:
   registry_package:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   deploy:
