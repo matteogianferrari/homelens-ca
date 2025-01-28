@@ -37,7 +37,8 @@ def predict(*features) -> float:
         The predicted median house value ($).
 
     Raises:
-        requests.HTTPError: If the HTTP request to the model service fails.
+        requests.HTTPError: If the HTTP request to the model service fails
+            (timeout set to 5 seconds).
     """
     # URL used to make POST request to the HomeLens CA Model microservice
     # This variable is obtained from the environment

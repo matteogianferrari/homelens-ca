@@ -100,7 +100,7 @@ app = FastAPI(
     lifespan=lifespan,
     title="HomeLens CA Model Microservice",
     description="A REST API for predicting median house values in California using MLFlow models.",
-    version="1.0.0",
+    version="1.1.0",
 )
 
 
