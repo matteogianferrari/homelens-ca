@@ -5,8 +5,8 @@ from a deep learning model managed by MLFlow. The API provides an endpoint
 to receive input features, process them using a predefined pipeline, and return
 the predicted median house value.
 
-The application leverages MLFlow for model tracking and deployment, ensuring
-seamless integration and scalability.
+The application leverages MLFlow for model and pipeline tracking and deployment,
+ensuring seamless integration and scalability.
 """
 
 from contextlib import asynccontextmanager

@@ -4,16 +4,6 @@ on:
   push:
     branches:
       - main
-      - development
-      - feature/*
-      - bug/*
-    paths:
-      - 'model/**'
-      - '!model/notebooks/**'
-  pull_request:
-    branches:
-      - main
-      - development
     paths:
       - 'model/**'
       - '!model/notebooks/**'

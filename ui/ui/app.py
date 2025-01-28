@@ -5,7 +5,7 @@ Users can input various attributes related to a housing block, and the model ret
 the predicted median house value.
 
 The application leverages Gradio for the user interface and communicates with a
-model-serving microservice via HTTP requests.
+model microservice via HTTP requests.
 """
 
 import os

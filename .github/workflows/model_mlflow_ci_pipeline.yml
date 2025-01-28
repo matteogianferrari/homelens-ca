@@ -1,4 +1,4 @@
-name: Model CI Pipeline
+name: Model MLFlow CI Pipeline
 
 on:
   push:
