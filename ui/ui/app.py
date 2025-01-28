@@ -141,7 +141,7 @@ interface = gr.Interface(
     fn=predict,
     inputs=inputs,
     examples=examples,
-    outputs=gr.Number(label="Predicted Median House Value", precision=2),
+    outputs=gr.Number(label="Predicted Median House Value [$]", precision=2),
     title="HomeLens CA",
     description=(
         "Predict the median house values in California (1990) given block information. "

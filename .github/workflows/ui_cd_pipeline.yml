@@ -1,0 +1,28 @@
+name: UI CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["UI CI Pipeline"]
+    types: [completed]
+
+  registry_package:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    if: ${{ 
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') 
+      && 
+      (
+        github.event_name == 'registry_package' 
+        && github.event.package.package_type == 'container' 
+        && github.event.package.name == 'matteogianferrari/homelens-ca-ui'
+      )
+    }}
+
+    steps:
+      - name: Trigger Deploy on Render
+        run: |
+          curl -X POST "${{ secrets.HOMELENS_CA_UI_DEPLOY_HOOK }}"
