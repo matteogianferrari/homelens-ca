@@ -78,6 +78,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Avoid specifying working dir for each job/step
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
       # Trigger re-deploy
       - name: Trigger Deploy on Render
         if: |
