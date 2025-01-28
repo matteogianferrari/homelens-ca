@@ -1,19 +1,29 @@
-name: Model REST API CI Pipeline
+name: Model REST API CI/CD Pipeline
 
+
+# Trigger logic
 on:
+  # Triggered by pushes to the main branch related to the Model microservice (notebooks excluded)
   push:
     branches:
       - main
     paths:
       - 'model/**'
       - '!model/notebooks/**'
+  # Manual trigger for debug
+  workflow_dispatch:
 
+
+# Default work directory
 defaults:
   run:
     working-directory: ./model
 
+
+# CI and CD jobs
 jobs:
-  # 1. Lint Dockerfile with Hadolint
+  # CI Pipeline
+  # 2. Lints the Dockerfile with Hadolint
   lint_docker:
     runs-on: ubuntu-latest
 
@@ -31,7 +41,7 @@ jobs:
 
   # 2. Build Docker image
   docker_build_push:
-    # Ensure jobs are completed successfully before running
+    # Ensures lint_docker completes successfully before running
     needs:  lint_docker
     runs-on: ubuntu-latest
 
@@ -45,16 +55,32 @@ jobs:
         run: |
           docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}-model:latest .
 
-      # Log in to GH Container Registry ONLY if push to main
+      # Log in to GH Container Registry
       - name: Log in to GitHub Container Registry
         if: |
           (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Push the image ONLY if push to main
+      # Push the image to the Container Registry
       - name: Push Docker image
         if: |
           (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}-model:latest
+
+
+  # CD Pipeline
+  # 1. Triggers re-deploy on the hosted server
+  deploy:
+    # Ensure docker_build_push completes successfully before running
+    needs: docker_build_push
+    runs-on: ubuntu-latest
+
+    steps:
+      # Trigger re-deploy
+      - name: Trigger Deploy on Render
+        if: |
+          (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        run: |
+          curl -X POST "${{ secrets.HOMELENS_CA_MODEL_DEPLOY_HOOK }}"

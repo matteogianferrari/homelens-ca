@@ -1,27 +1,28 @@
-name: UI CI Pipeline
+name: UI CI/CD Pipeline
 
+
+# Trigger logic
 on:
+  # Triggered by pushes to the main branch related to the UI microservice
   push:
     branches:
       - main
-      - development
-      - feature/*
-      - bug/*
     paths:
       - 'ui/**'
-  pull_request:
-    branches:
-      - main
-      - development
-    paths:
-      - 'ui/**'
+  # Manual trigger for debug
+  workflow_dispatch:
 
+
+# Default work directory
 defaults:
   run:
     working-directory: ./ui
 
+
+# CI and CD jobs
 jobs:
-  # 1. Lint Python code with Pylint
+  # CI Pipeline
+  # 1. Lints the python code with Pylint
   lint_python:
     runs-on: ubuntu-latest
 
@@ -47,7 +48,7 @@ jobs:
         run: |
           pylint --rcfile ../.pylintrc.toml ui/
 
-  # 2. Lint Dockerfile with Hadolint
+  # 2. Lints the Dockerfile with Hadolint
   lint_docker:
     runs-on: ubuntu-latest
 
@@ -63,9 +64,9 @@ jobs:
           chmod +x hadolint
           ./hadolint --config ../.hadolint.yml Dockerfile
 
-  # 3. Unit testing
+  # 3. Unit testing the code
   unit_tests:
-    # Ensure lint_python completes successfully before running tests
+    # Ensures lint_python completes successfully before running tests
     needs: lint_python
     runs-on: ubuntu-latest
 
@@ -93,7 +94,7 @@ jobs:
 
   # 4. Build Docker image
   docker_build_push:
-    # Ensure jobs are completed successfully before running
+    # Ensures unit_tests and lint_docker are completed successfully before running
     needs: [unit_tests, lint_docker]
     runs-on: ubuntu-latest
 
@@ -107,16 +108,32 @@ jobs:
         run: |
           docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}-ui:latest .
 
-      # Log in to GH Container Registry ONLY if push to main or PR to main
+      # Log in to GH Container Registry
       - name: Log in to GitHub Container Registry
         if: |
           (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Push the image ONLY if push to main or PR to main
+      # Push the image to the Container Registry
       - name: Push Docker image
         if: |
           (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}-ui:latest
+  
+
+  # CD Pipeline
+  # 1. Triggers re-deploy on the hosted server
+  deploy:
+    # Ensure docker_build_push completes successfully before running
+    needs: docker_build_push
+    runs-on: ubuntu-latest
+
+    steps:
+      # Trigger re-deploy
+      - name: Trigger Deploy on Render
+        if: |
+          (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        run: |
+          curl -X POST "${{ secrets.HOMELENS_CA_UI_DEPLOY_HOOK }}"

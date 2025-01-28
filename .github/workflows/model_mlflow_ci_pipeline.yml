@@ -1,19 +1,27 @@
 name: Model MLFlow CI Pipeline
 
+
+# Trigger logic
 on:
+  # Triggered by pushes to the main branch related to notebooks in Model microservice
   push:
     branches:
       - main
-    # Trigger the CI pipeline only when notebooks are updated
     paths:
       - "**.ipynb"
+  # Manual trigger for debug
+  workflow_dispatch:
 
+
+# Default work directory
 defaults:
   run:
     working-directory: ./model
 
+# CI jobs
 jobs:
-  # 1. Execute script
+  # CI Pipeline
+  # 1. Executes the MLFlow update model script
   update_model_registry:
     runs-on: ubuntu-latest
 
@@ -34,7 +42,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Run the script
+      # Run the script (requires env variables)
       - name: Run champion model update script
         env:
           MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
