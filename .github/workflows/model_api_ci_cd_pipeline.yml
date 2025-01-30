@@ -55,14 +55,14 @@ jobs:
         run: |
           docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}-model:latest .
 
-      # Log in to GH Container Registry
+      # Log in to GH Container Registry ONLY on pushes to main, NOT on manual trigger
       - name: Log in to GitHub Container Registry
         if: |
           (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Push the image to the Container Registry
+      # Push the image to the Container Registry ONLY on pushes to main, NOT on manual trigger
       - name: Push Docker image
         if: |
           (github.event_name == 'push' && github.ref == 'refs/heads/main')
@@ -81,8 +81,8 @@ jobs:
       # Avoid specifying working dir for each job/step
       - name: Checkout code
         uses: actions/checkout@v2
-        
-      # Trigger re-deploy
+
+      # Trigger re-deploy ONLY on pushes to main, NOT on manual trigger
       - name: Trigger Deploy on Render
         if: |
           (github.event_name == 'push' && github.ref == 'refs/heads/main')
