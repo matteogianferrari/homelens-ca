@@ -96,7 +96,7 @@ If you want to modify the project:
 
 ## Usage
 
-You can access the hosted application on Render (being a free hosting platform, the microservices will spin down with inactivity, thus it requires some time to spin them back up): [HomeLens CA on Render](#homelens-ca-ui-w2zj.onrender.com)
+You can access the hosted application on Render (being a free hosting platform, the microservices will spin down with inactivity, thus it requires some time to spin them back up): [HomeLens CA on Render](https://homelens-ca-ui-w2zj.onrender.com)
 
 ---
 
