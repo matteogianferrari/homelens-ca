@@ -66,3 +66,7 @@ def update_champion_model():
         )
 
         print(f"Updated champion model to version {mv.version}.")
+
+
+if __name__ == '__main__':
+    update_champion_model()
